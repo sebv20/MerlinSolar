@@ -3,12 +3,8 @@ import os
 import string
 import os.path
 import sys
-import shutil
-import xlrd
 import csv
-import argparse
 import xlsxwriter
-#import antigravity
 import pandas as pd
 import numpy as np
 import matplotlib as plt
@@ -16,8 +12,6 @@ import seaborn as sns
 import tkinter as tk
 from tkinter.filedialog import *
 from tkinter.messagebox import *
-from pptx import Presentation
-from pptx.util import Inches
 from datetime import date
 from pathlib import Path
 

@@ -220,7 +220,7 @@ def percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_li
 
 	#print(percent_changers)
 
-	location = askdirectory(title = "Select location to export number of modules fit to.")
+	location = askdirectory(title = "Select location to export Excel file to.")
 	os.chdir(location)
 
 	workbook = xlsxwriter.Workbook(str(filename)+".xlsx") 

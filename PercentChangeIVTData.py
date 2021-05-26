@@ -204,11 +204,11 @@ def percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_li
 		if ff_list[v] == None:
 			percent_changeff[k] = 0
 		else:
-			percent_changeff[k] = ((ff_list[v] - post_lam_dict["ff"])/post_lam_dict["ff"])*100
+			percent_changeff[k] = ((ff_list[v] - post_lam_dict["ff"])/post_lam_dict["ff"]) *100
 		if eff_list[v] == None:
 			percent_changeeff[k] = 0
 		else:
-			percent_changeeff[k] = (eff_list[v] - post_lam_dict["eff"])
+			percent_changeeff[k] = ((eff_list[v] - post_lam_dict["eff"])/post_lam_dict["eff"]) *100
 		if rsh_list[v] == None:
 			percent_changersh[k] = 0
 		else:

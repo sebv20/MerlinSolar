@@ -180,7 +180,7 @@ def percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_li
 
 
 	for k,v in matches.items():
-		post_lam_dict = percent_change_helper(post_lams,k,matches,isc_list,voc_list,imp_list, vmp_list, pmp_list, ff_list, eff_list, rsh_list, rs_list)
+		post_lam_dict = percent_change_helper(post_lams, k,matches,isc_list,voc_list,imp_list, vmp_list, pmp_list, ff_list, eff_list, rsh_list, rs_list)
 		if isc_list[v] == None:
 			percent_changeisc[k] = 0
 		else:
@@ -220,7 +220,7 @@ def percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_li
 
 	#print(percent_changers)
 
-	location = askdirectory(title = "Select location to export excel file to.")
+	location = askdirectory(title = "Select location to export number of modules fit to.")
 	os.chdir(location)
 
 	workbook = xlsxwriter.Workbook(str(filename)+".xlsx") 
@@ -434,7 +434,7 @@ def copyfromaccess():
 	table_row = cursor.execute('Select * from Results')
 	eff_list = []
 	for row in table_row:
-		eff_value = row[12]
+		eff_value = row[11]
 		eff_list.append(eff_value)
 	#print(len(eff_list))
 	#print(eff_list)
@@ -442,7 +442,7 @@ def copyfromaccess():
 	table_row = cursor.execute('Select * from Results')
 	rsh_list = []
 	for row in table_row:
-		rsh_value = row[13]
+		rsh_value = row[12]
 		rsh_list.append(rsh_value)
 	#print(len(rsh_list))
 	#print(rsh_list)
@@ -450,7 +450,7 @@ def copyfromaccess():
 	table_row = cursor.execute('Select * from Results')
 	rs_list = []
 	for row in table_row:
-		rs_value = row[14]
+		rs_value = row[13]
 		rs_list.append(rs_value)
 	#print(len(rs_list))
 	#print(rs_list)

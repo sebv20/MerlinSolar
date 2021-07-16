@@ -7,7 +7,7 @@ import shutil
 import xlrd
 import csv
 import argparse
-import xlsxwriter
+from xlsxwriter import Workbook  
 import pptx
 #import antigravity
 import pandas as pd
@@ -21,7 +21,7 @@ from pptx import Presentation
 from pptx.util import Inches
 from datetime import date
 from pathlib import Path
-
+import re
 
 # Part 1: Define useful script specific functions here.
 
@@ -46,14 +46,27 @@ def organizepeeltest():
 
 	df_list = []
 
+
 	for file in filenames:
-
+		counter = 0
 		os.chdir(location)
-		
-		df = pd.read_csv(file, header = 4, usecols = col_list)
-
-		#Drop/rename some rows & columns
-		df = df.drop(0)
+		try: 
+			df = pd.read_csv(file)
+			print(df)
+			#Drop/rename some rows & columns
+			df = df.drop(0)
+			#df = df.iloc[0]
+			# df = df.drop(0)
+			# df = df.drop.iloc(0)
+		except:
+			data = []
+			with open(file, 'r') as f:
+				for row in f:
+					data.append([re.sub(r'^"|"$', '', item).strip() for item in row.split(',')])
+			# df = pd.read_csv(file)
+			# df = df.apply(lambda x: x.str.strip('"'))
+			print(df)
+			#df = df.drop(0, inplace = True)
 
 		df = df.rename(columns = {"Peel displacement":"Peel Displacement (mm)", "Force":"Force (N)", "Force / Width":"Force/Width (N/mm)"})
 
@@ -105,7 +118,7 @@ peeltestcanvas.pack()
 savenameentry = tk.Entry(peeltestgui)
 peeltestcanvas.create_window(200, 75, window = savenameentry)
 
-savenamelabel = tk.Label(text = "Peel Test Combinred CSV Name")
+savenamelabel = tk.Label(text = "Peel Test Combined CSV Name")
 peeltestcanvas.create_window(200, 50, window = savenamelabel)
 
 
@@ -117,3 +130,8 @@ peeltestcanvas.create_window(200, 130, window = organizepeeltestbutton)
 
 
 peeltestgui.mainloop()
+
+
+# Improvement Areas:
+# Find out why the csv file format from the peel tester is sometimes exported in a different format.
+# Update this program to include shear testing files.

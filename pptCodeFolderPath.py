@@ -1,14 +1,15 @@
 import glob
-import os
+import os, sys
 import string
 import os.path
 import sys
 import shutil
-import xlrd
+#import xlrd
 import csv
 import argparse
 import xlsxwriter
 import pptx
+import imghdr
 #import antigravity
 import pandas as pd
 import numpy as np
@@ -18,9 +19,15 @@ import tkinter as tk
 from tkinter.filedialog import *
 from tkinter.messagebox import *
 from pptx import Presentation
+from pptx.util import Pt
 from pptx.util import Inches
 from datetime import date
 from pathlib import Path
+from PIL import Image
+from io import StringIO, BytesIO
+import cv2
+from PIL import JpegImagePlugin
+
 
 
 # Part 1: How to import all the files we want
@@ -53,12 +60,51 @@ def stem_list(extensionlist):
 
 	return noextensionlist
 
-
 # Define useful script specific functions here
-
 
 # Precondition: function is tied to a button input.
 # Postcondition: function will take all the images from all the subdirectories within a directory and add them all onto a different slide per subdirectory.
+
+
+def sorthelper(path, postcondition, pptx_location, prs):
+	condition = os.scandir(path)
+
+	for folder in condition:
+		if folder.is_file():
+			cwd = os.getcwd()
+			imagefiles = []
+			filenames = glob.glob("*.jpg")
+			filenames_jpeg = glob.glob("*jpeg")
+
+			for file in filenames:
+				imagefiles.append(file)
+			for file in filenames_jpeg:
+				imagefiles.append(file)
+			addimages(imagefiles, postcondition, pptx_location, prs, imagefiles,cwd)		
+		
+
+		else:
+			os.chdir(folder)
+			cwd = os.getcwd()
+			if folders_in(cwd) == False:
+				imagefiles = []
+				filenames = glob.glob("*.jpg")
+				filenames_jpeg = glob.glob("*jpeg")
+				#filenames = glob.glob(cwd, recursive = True)
+				for file in filenames:
+					imagefiles.append(file)
+				for file in filenames_jpeg:
+					imagefiles.append(file)
+				addimages(imagefiles, postcondition, pptx_location, prs, imagefiles,cwd)	
+			else:
+				sorthelper(cwd, postcondition, pptx_location, prs)
+				# sorthelper(cwd, postcondition, pptx_location, prs)
+
+def folders_in(path):
+	for fname in os.listdir(path):
+		if os.path.isdir(os.path.join(path, fname)):
+			return True
+	return False
 
 
 def sortcondition():
@@ -78,20 +124,33 @@ def sortcondition():
 	if not(pptx_location):
 		sys.exit(0)
 
-	prs = Presentation(pptx_location)
+	prs = Presentation(pptx_location) 
 
-	for folder in condition:
-		if folder.is_dir():
-			imagefiles = []
+	# imagefiles = []
+	# for root, subd, files in os.walk(location):
+	# 	for name in files:
+	# 		os.chdir(files)
+	# 		#	file_name=glob.glob("*.jpg")
+	# 		for file in file_name:
+	# 			imagefiles.append(file)
+	# 		addimages(subd, postcondition, pptx_location, prs, imagefiles)
 
-			os.chdir(folder)
-			filenames = glob.glob("*.jpg")
 
-			for file in filenames:
-				imagefiles.append(file)
+	# for folder in condition:
+	# 		if folder.is_dir():
+	# 			imagefiles = []
 
-			addimages(folder, postcondition, pptx_location, prs, imagefiles)
+	# 			os.chdir(folder)
+	# 			filenames = glob.glob("*.jpg")
 
+	# 			for file in filenames:
+	# 				imagefiles.append(file)
+
+	# 			addimages(folder, postcondition, pptx_location, prs, imagefiles)
+	# 		else:
+	# 			sorthelper(folder)
+	
+	sorthelper(location, postcondition, pptx_location, prs)
 	save_location = askdirectory(title = "Select location to save presentation.")
 	os.chdir(save_location)
 	prs.save(str(savename)+".pptx")
@@ -101,7 +160,7 @@ def sortcondition():
 # Postcondition: function will all all the images from a certain directory to a new slide.
 
 
-def addimages(folder, postcondition, pptx_location, prs, modulelist):
+def addimages(folder, postcondition, pptx_location, prs, modulelist, path):
 
 	lyt_1 = prs.slide_layouts[0]
 	lyt_2 = prs.slide_layouts[1]
@@ -112,31 +171,40 @@ def addimages(folder, postcondition, pptx_location, prs, modulelist):
 	lyt_7 = prs.slide_layouts[6]
 	lyt_8 = prs.slide_layouts[7]
 
-	pictureslides = prs.slides.add_slide(lyt_5)
+	pictureslides = prs.slides.add_slide(lyt_6)
 	pictureslidestitle = pictureslides.shapes.title
+	pictureslidestitle.size = Pt(18)
 
-	newfolder = str(folder)
-	foldername = newfolder[newfolder.find("'")+1:newfolder.rfind("'")]
+	# newfolder = str(folder)
+	# foldername = newfolder[newfolder.find("'")+1:newfolder.rfind("'")]
 
-	pictureslidestitle.text = str(foldername)+" @ "+str(postcondition)
 
-	width_full_standard_slide = Inches(10)
-	width_full_widescreen_slide = Inches(13.333)
-	height_full_slide = Inches(7.5)
-	top_margin = Inches(1.5)
-	side_margin = Inches(0.1)
-	margin_in_between = Inches(0.5)
+	pictureslidestitle.text = str(path)
+	pictureslidestitle.text_frame.paragraphs[0].font.size = Pt(24)
 
-	top_6_1 = top_margin
-	left_6_1 = side_margin
-	top_6_2 = (height_full_slide/2)+(1.5*margin_in_between)
-	left_6_2 = (width_full_widescreen_slide/3)+left_6_1
-	left_6_3 = (2*(width_full_widescreen_slide/3))+left_6_1
-	width_6 = (width_full_widescreen_slide/3)-(2*left_6_1)
-	height_6 = (height_full_slide/2)-top_6_1
-
+	
+	padding = 2
 	for image in modulelist:
-		pictureslides.shapes.add_picture(image, left_6_2, top_6_1)
+		JpegImagePlugin._getmp = lambda x: None
+		im = Image.open(image)
+		im = cv2.imread(image)
+
+		image_width, image_height, color = im.shape
+		slide_width = prs.slide_width.inches -4
+		slide_height = prs.slide_height.inches -2
+		if (image_width / slide_width) > (image_height / slide_height):
+			#Image fits slide horizontally and must be scaled down vertically
+		    print(1)
+		    left = Inches(5)
+		    top = Inches(2.5)
+		    pictureslides.shapes.add_picture(image, left, top, height = Inches(4))
+		else:
+		    # Image fits slide vertically and must be scaled down horizontally
+			print(2)
+			left = Inches(4)
+			top = Inches(2.5)	
+			pictureslides.shapes.add_picture(image, left, top, width = Inches(6))
+		# Convert from EMU to inches
 
 
 # Part 3: Create the GUI

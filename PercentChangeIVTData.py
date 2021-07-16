@@ -101,10 +101,16 @@ def condition_split(mod_iden,matches):
 	split_cond = []
 
 	if mod_iden == "EP":
-		for k,v in matches.items():
-			temp = k.split('-',3)
-			split_cond.append(temp[3])
-		return split_cond
+		try:
+			for k,v in matches.items():
+				temp = k.split('-',3)
+				split_cond.append(temp[3])
+			return split_cond
+		except:
+			for k,v in matches.items():
+				temp = k.split('-',1)
+				split_cond.append(temp[1])
+			return split_cond			
 
 	else:
 		for k,v in matches.items():
@@ -117,13 +123,22 @@ def id_split(mod_iden,matches):
 	split_id = []
 
 	if mod_iden == "EP":
-		for k,v in matches.items():
-			temp = k.split('-',3)
-			tempdel = temp[3]
-			temp.remove(tempdel)
-			app = '-'.join(temp)
-			split_id.append(app)
-		return split_id
+		try:
+			for k,v in matches.items():
+				temp = k.split('-',3)
+				tempdel = temp[3]
+				temp.remove(tempdel)
+				app = '-'.join(temp)
+				split_id.append(app)
+			return split_id
+		except:
+			for k,v in matches.items():
+				temp = k.split('-',1)
+				tempdel = temp[1]
+				temp.remove(tempdel)
+				app = '-'.join(temp)
+				split_id.append(app)
+			return split_id		
 	else:
 		for k,v in matches.items():
 			temp = k.split('-',5)
@@ -133,6 +148,102 @@ def id_split(mod_iden,matches):
 			split_id.append(app)
 
 		return split_id
+
+def barcode_helper(row, column, match_string):
+
+	year = {'A': '2020', 'B': '2021', 'C': '2022', 'D': '2023', 'E': '2024', 'F': '2025', 'G': '2026', 'H': '2027', 'I': '2028', 'J': '2029', 'K': '2030', 'L': '2031'}
+	month = {'A': 'January', 'B': 'February', 'C': 'March', 'D': 'April', 'E': 'May', 'F': 'June', 'G': 'July', 'H': 'August', 'I': 'September', 'J': 'October', 'K': 'November', 'L': 'December'}
+	day = {'1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9', 'A': '10', 'B': '11', 'C':'12', 'D': '13', 'E':'14', 'F': '15', 'G': '16', 'H': '17', 'J': '18','K': '19','L': '20', 'M': '21', 'N': '22','P': '23','R': '24', 'S': '25','T': '26', 'U': '27','V': '28', 'W': '29', 'X': '30', 'Y': '31'}
+	cell_type = {'_': 'Parent', 'A': 'Mono M2 EEPV', 'B': 'PERC M2 EEPV', 'C': 'PERC G1 URE', 'D': 'HJT M2 + HEVEL', 'E': 'HJT M2 + Kaneka', 'F': 'Perc M2 URE', 'G': 'Provisional 1', 'H': 'Provisional 1', 'Z': 'Engineering 1'}
+	encap = {"_": "Parent", "A": "Mistui EVA", 'B': 'Cybrid POE', 'C': 'Mitsui POE', 'D': 'First EVA STR EVA 0.2', 'E': "First EVA 0.45mm", 'G': 'Cybrid POE 0.45 STR EVA 0.2', 'F': 'Provisional 1', 'Z': 'Engineering 1'}
+	grid_version = {'1': 'POR', '2': 'Gen 2 Black', '3': "Gen 2 Copper", '4': 'Provisional 1', '5': 'Provisional 1', '0': 'Engineering 1'}
+	mfg_location = {'1': 'San Jose', '2': 'Waaree', '3': 'Laguna'}
+	family = {'F': "FX Transporation", 'R': 'FX Roofing', 'B': 'Back Rail Glass Roofing', 'M': 'FX Marine', 'N': 'Nishati', 'H': 'Honeycomb Board', 'G': 'GX', 'X': 'FX Portables/Folding', 'S': 'Specialty'}
+	color = {'B': 'Black', 'W': 'White', 'T': 'Transparent', 'C': 'Camo', 'M': 'Multicolor', 'P': 'Provisional 1', 'Q': 'Provisional 1', 'X': 'Engineering 1'}
+	cell_cut  = {'F': 'Full', 'H': 'Half', 'Q': 'Quarter', 'E': 'Eighth', 'S': 'Sixteenth'}
+	array_config = [['10 SC Config (Trucklite)','F', 'AA'],['2x5 TC Config', 'T', 'AA' ], ['3x(6x6) QC XP Config', 'P', 'AA'], ['4x14 QC Config', 'F', 'AB'],['4x8 QC Config', 'F', 'AC'],['8x4 QC Config', 'F', 'AD'],['12x6 QC Config', 'F', 'AE'],['14x6 QC Config', 'F', 'AF'],['3x(4x5) HC Multifold (Nishati)', 'N', 'AA'],
+	['8x6 HC Config', 'F', 'AB'],['4x12 HC Config', 'F', 'AC'], ['4x11 HC Config', 'F', 'AD'], ['3x(2x7) HC BXD Config', 'P', 'AE'], ['6x7-1 HC Config', 'F', 'AF'],['6x6 HC horizontal', 'F', 'AG'],['3x(4x3) HC XP Config', 'P', 'AH'],['5x7 HC Config', 'F', 'AI'],['2x(4x4) HC Multifold (Nishati)', 'N', 'AJ'], ['4x(2x3) HC MiniXP Config', 'N', 'AK'],
+	['5x4 HC Config – King', 'F', 'AL'],['4x(2x2) HC MiniXP Config', 'P', 'AM'],['3X6 HC Config', 'F', 'AN'],['4x6-1 HC Config', 'F', 'AO'],['4x6 HC Config', 'F', 'AP'],['6x4 HC Config', 'F', 'AQ'],['6x7 HC Config', 'F', 'AR'],['6x14 HC Config 84 HC Back JB', 'F', 'AS'],['6x14-1 HC Config 83 HC Top JB', 'F', 'AT'],['9x5-3 42HC Config', 'F', 'AU'],
+	['6x12 FC BR Config', 'R', 'AA'],['6x12 FC S Config', 'F', 'AB'],['6x12 FC P,Corner Jbox, Turnt', 'F', 'AC'],['6x12 FC P,Corner Jbox, Standard', 'F', 'AD'],['8x6 FC Config', 'F', 'AE'],['4x12 FC Config', 'F', 'AF'],['3x14-1 FC Config', 'F', 'AG'],['3x(4x3) FC XP Config', 'F', 'AH'],['3x12 FC Config', 'F', 'AI'],['2x18 FC Config', 'F','AJ'],['2x18 FC Config','R', 'AJ'],
+	['6x6 FC Config', 'F','AK'],['6x6 FC Config','R', 'AK'],['4x9 FC Config', 'F', 'AL'],['4x8 FC Config', 'F', 'AM'],['2x(4x4) FC Multifold (Nishati)', 'N', 'AN'],['2x15 FC Config', 'F', 'AO'],['3x(4x2) FC Trifold Nishati', 'N', 'AP'],['2x12 FC Config','R', 'AQ'],['2x12 FC Config', 'F','AQ'],['3x8 FC Config', 'F', 'AR'],['4x6 FC Config', 'F', 'AS'],['3x7 FC Config', 'F', 'AT'],
+	['2x9 FC Config', 'F', 'AU'],['2x8 FC Config', 'F', 'AV'],['4x4 FC Config', 'F', 'AW'],['4x3 FC Config', 'F', 'AX'],['2x6 FC Config', 'F', 'AY'],['2X3 FC Config', 'F', 'AZ'],['12x8 FC TinyWatts', 'F', 'BA'],['8x6 FC Navistar', 'F', 'BB'],['14x6 FC Config', 'F', 'BC'],['1x1 FC Config','F','BD'],['1x2 FC Config','F','BE'],['2x2 FC Config','F','BF'],
+	['2x3 FC Config','F','BG'],['3x3 FC Config', 'F','BH'],['4x4 FC Config','F','BI']]
+	#NEEDS TO BE EXCEL-ED
+	#CHECK BARCODE FOR FAMILY MATCHING VALUES
+	index = 0
+	counter =0
+	start = 0
+	for x in match_string:
+		if x == '-':
+			if counter == 1:
+				start = index+2
+			counter+=1
+		else:
+			index+=1
+
+	barcode = match_string[start:]
+	print(barcode)
+	output = []
+
+	if len(barcode) >10:
+		for k,v in year.items():
+			if k == barcode[0]:
+				output.append(v)
+
+		for k,v in month.items():
+			if k == barcode[1]:
+				output.append(v)
+
+		for k,v in day.items():
+			if k == barcode[2]:
+				output.append(v)
+
+		for k,v in cell_type.items():
+			if k == barcode[3]:
+				output.append(v)
+
+		for k,v in encap.items():
+			if k == barcode[4]:
+				output.append(v)
+
+		for k,v in grid_version.items():
+			if k == barcode[5]:
+				output.append(v)
+
+		for k,v in mfg_location.items():
+			if k == barcode[6]:
+				output.append(v)
+
+		for k,v in family.items():
+			if k == barcode[7]:
+				output.append(v)
+
+		for k,v in color.items():
+			if k == barcode[8]:
+				output.append(v)
+
+		for k,v in cell_cut.items():
+			if k == barcode[9]:
+				output.append(v)
+
+		for x in array_config:
+			# print(x[2])
+			# print(barcode[10:11])
+			if x[2] == barcode[10:12]:
+				# print(barcode[10:12])
+				# if x[1] == barcode[7]:
+				output.append(x[0])
+				print(x[0])				
+
+		return output
+	else:
+		return output
+
+
+
+
+
+
 
 #this function calculates percent change by first taking in lists with all values imported from access database in copyfromaccess()
 #function then creates empty dictionaries to be filled by data 
@@ -164,8 +275,7 @@ def percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_li
 	wanted_rsh = {}
 	wanted_rs = {}
 
-
-
+	
 
 	for k,v in matches.items():
 		wanted_isc[k] = (isc_list[v])
@@ -180,7 +290,7 @@ def percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_li
 
 
 	for k,v in matches.items():
-		post_lam_dict = percent_change_helper(post_lams, k,matches,isc_list,voc_list,imp_list, vmp_list, pmp_list, ff_list, eff_list, rsh_list, rs_list)
+		post_lam_dict = percent_change_helper(post_lams,k,matches,isc_list,voc_list,imp_list, vmp_list, pmp_list, ff_list, eff_list, rsh_list, rs_list)
 		if isc_list[v] == None:
 			percent_changeisc[k] = 0
 		else:
@@ -204,11 +314,11 @@ def percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_li
 		if ff_list[v] == None:
 			percent_changeff[k] = 0
 		else:
-			percent_changeff[k] = ((ff_list[v] - post_lam_dict["ff"])/post_lam_dict["ff"]) *100
+			percent_changeff[k] = ((ff_list[v] - post_lam_dict["ff"])/post_lam_dict["ff"])*100
 		if eff_list[v] == None:
 			percent_changeeff[k] = 0
 		else:
-			percent_changeeff[k] = ((eff_list[v] - post_lam_dict["eff"])/post_lam_dict["eff"]) *100
+			percent_changeeff[k] = (eff_list[v] - post_lam_dict["eff"])
 		if rsh_list[v] == None:
 			percent_changersh[k] = 0
 		else:
@@ -228,115 +338,159 @@ def percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_li
 	#workbook = xlsxwriter.Workbook(excel_path)
 	worksheet = workbook.add_worksheet()
 
-	worksheet.write('A1', "Module ID and Condition")
-	worksheet.write('B1', "Module ID")
-	worksheet.write('C1', "Module Condition")
-	worksheet.write('D1', 'ISC')
-	worksheet.write('E1', 'VOC')
-	worksheet.write('F1', 'IMP')
-	worksheet.write('G1', 'VMP')
-	worksheet.write('H1', 'PMP')
-	worksheet.write('I1', 'FF')
-	worksheet.write('J1', 'EFF')
-	worksheet.write('K1', 'RSH')
-	worksheet.write('L1', 'RS')	
-	worksheet.write('M1', 'ISC % Change')
-	worksheet.write('N1', 'VOC % Change')
-	worksheet.write('O1', 'IMP % Change')
-	worksheet.write('P1', 'VMP % Change')
-	worksheet.write('Q1', 'PMP % Change')
-	worksheet.write('R1', 'FF % Change')
-	worksheet.write('S1', 'EFF % Change')
-	worksheet.write('T1', 'RSH % Change')
-	worksheet.write('U1', 'RS % Change')
+
+	worksheet.write('A1', 'Year')
+	worksheet.write('B1', 'Month')
+	worksheet.write('C1', 'Day')
+	worksheet.write('D1', 'Cell Type')
+	worksheet.write('E1', 'Encap')
+	worksheet.write('F1', 'Grid Version')
+	worksheet.write('G1', 'MFG Location')
+	worksheet.write('H1', 'Family')
+	worksheet.write('I1', "Color")
+	worksheet.write('J1', 'Cell Cut')
+	worksheet.write('K1', 'Array Config')
+
+	worksheet.write('L1', "Module ID and Condition")
+	worksheet.write('M1', "Module ID")
+	worksheet.write('N1', "Module Condition")
+	worksheet.write('O1', 'ISC')
+	worksheet.write('P1', 'VOC')
+	worksheet.write('Q1', 'IMP')
+	worksheet.write('R1', 'VMP')
+	worksheet.write('S1', 'PMP')
+	worksheet.write('T1', 'FF')
+	worksheet.write('U1', 'EFF')
+	worksheet.write('V1', 'RSH')
+	worksheet.write('W1', 'RS')	
+	worksheet.write('X1', 'ISC % Change')
+	worksheet.write('Y1', 'VOC % Change')
+	worksheet.write('Z1', 'IMP % Change')
+	worksheet.write('AA1', 'VMP % Change')
+	worksheet.write('AB1', 'PMP % Change')
+	worksheet.write('AC1', 'FF % Change')
+	worksheet.write('AD1', 'EFF % Change')
+	worksheet.write('AE1', 'RSH % Change')
+	worksheet.write('AF1', 'RS % Change')
 
 
 	row=1 
+	column = 0
+	for x in split_ids: 
+		column =0
+		barcode_list = barcode_helper(row, column, x)
+		for y in barcode_list:
+			worksheet.write(row, column, y)
+			column+=1
+		row+=1
+	row=1
+	column=11
 	for	x in matches:
-		worksheet.write(row,0, x)	
-		row+=1		
+		worksheet.write(row,column, x)	
+		row+=1	
+	column+=1	
 	row=1 
 	for	x in split_ids:
-		worksheet.write(row,1, x)	
+		worksheet.write(row,column, x)	
 		row+=1	
+	column+=1
 	row=1 
 	for	x in split_cond:
-		worksheet.write(row,2, x)	
-		row+=1			
+		worksheet.write(row,column, x)	
+		row+=1	
+	column+=1		
 	row=1 
 	for k, v in wanted_isc.items():
-		worksheet.write(row,3, v)
+		worksheet.write(row,column, v)
 		row+=1
+	column+=1
 	row=1
 	for k, v in wanted_voc.items():
-		worksheet.write(row,4, v)
+		worksheet.write(row,column, v)
 		row+=1
+	column+=1
 	row=1
 	for k, v in wanted_imp.items():
-		worksheet.write(row,5, v)
+		worksheet.write(row,column, v)
 		row+=1
+	column+=1
 	row=1
 	for k, v in wanted_vmp.items():
-		worksheet.write(row,6, v)
+		worksheet.write(row,column, v)
 		row+=1
+	column+=1
 	row=1
 	for k, v in wanted_pmp.items():
-		worksheet.write(row,7, v)
+		worksheet.write(row,column, v)
 		row+=1
+	column+=1
 	row=1
 	for k, v in wanted_ff.items():
-		worksheet.write(row,8, v)
+		worksheet.write(row,column, v)
 		row+=1
+	column+=1
 	row=1
 	for k, v in wanted_eff.items():
-		worksheet.write(row,9, v)
+		worksheet.write(row,column, v)
 		row+=1
+	column+=1
 	row=1
 	for k, v in wanted_rsh.items():
-		worksheet.write(row,10, v)
+		worksheet.write(row,column, v)
 		row+=1
+	column+=1
 	row=1
 	for k, v in wanted_rs.items():
-		worksheet.write(row,11, v)
+		worksheet.write(row,column, v)
 		row+=1
-
-
-
+	column+=1
 	row=1
+
+
+
 	for k, v in percent_changeisc.items():
-		worksheet.write(row,12, v)
+		worksheet.write(row,column, v)
 		row+=1
 	row=1
+	column+=1
 	for k, v in percent_changevoc.items():
-		worksheet.write(row,13, v)
+		worksheet.write(row,column,v)
 		row+=1
 	row=1
+	column+=1
 	for k, v in percent_changeimp.items():
-		worksheet.write(row,14, v)
+		worksheet.write(row,column, v)
 		row+=1
 	row=1
+	column+=1
 	for k, v in percent_changevmp.items():
-		worksheet.write(row,15, v)
+		worksheet.write(row,column, v)
 		row+=1
 	row=1
+	column+=1
 	for k, v in percent_changepmp.items():
-		worksheet.write(row,16, v)
+		worksheet.write(row,column, v)
 		row+=1
 	row=1
+	column+=1
 	for k, v in percent_changeff.items():
-		worksheet.write(row,17, v)
+		worksheet.write(row,column, v)
 		row+=1
 	row=1
+	column+=1
 	for k, v in percent_changeeff.items():
-		worksheet.write(row,18, v)
+		worksheet.write(row,column, v)
 		row+=1
 	row=1
+	column+=1
 	for k, v in percent_changersh.items():
-		worksheet.write(row,19, v)
+		worksheet.write(row,column, v)
 		row+=1
-	row=1
+
+
+
 	for k, v in percent_changers.items():
-		worksheet.write(row,20, v)
+		worksheet.write(row,column, v)
 		row+=1
 	workbook.close()
 	print("done")
@@ -434,7 +588,7 @@ def copyfromaccess():
 	table_row = cursor.execute('Select * from Results')
 	eff_list = []
 	for row in table_row:
-		eff_value = row[11]
+		eff_value = row[12]
 		eff_list.append(eff_value)
 	#print(len(eff_list))
 	#print(eff_list)
@@ -442,7 +596,7 @@ def copyfromaccess():
 	table_row = cursor.execute('Select * from Results')
 	rsh_list = []
 	for row in table_row:
-		rsh_value = row[12]
+		rsh_value = row[13]
 		rsh_list.append(rsh_value)
 	#print(len(rsh_list))
 	#print(rsh_list)
@@ -450,7 +604,7 @@ def copyfromaccess():
 	table_row = cursor.execute('Select * from Results')
 	rs_list = []
 	for row in table_row:
-		rs_value = row[13]
+		rs_value = row[14]
 		rs_list.append(rs_value)
 	#print(len(rs_list))
 	#print(rs_list)
@@ -543,3 +697,5 @@ lengthwidth.mainloop()
 
 #C:/Users/svargas/OneDrive - Merlin Solar Technologies, Inc/Data1.xlsx
 #P2828-M01-2X1-200820-05
+
+ 

@@ -14,16 +14,14 @@ import tkinter as tk
 from tkinter.filedialog import *
 from tkinter.messagebox import *
 import Levenshtein
+from datetime import datetime, timedelta
 
 
 
-
-# Part 1: Copy needed columns from Access into Python and organize into an array.
-
+#goes through list of all id's to find ones that match desired id, also labels multiple matches as "second test"
 def id_check(id_list,key):
 	i = 0
 	matches = {}
-	#wanted_str = input("Enter your wanted character(s):")
 	for match in id_list:
 		if key in match:
 			if match in matches:
@@ -32,6 +30,73 @@ def id_check(id_list,key):
 				matches[match] = i
 		i+=1
 	return matches
+
+def date_check(date_list,id_list,key):
+	i = 0
+	matches = {}
+	#print(key)
+	#print(date_list[0].strftime("%m/%d/%Y"))
+	for match in date_list:
+		if str(match.strftime("%m/%d/%Y")) == key:
+			if id_list[i] in matches:
+				matches[id_list[i]+"-SECOND-TEST"] = i
+			else:
+				matches[id_list[i]] = i
+		i+=1
+	matches_final = matches
+	mod_id = id_split("EP", matches)
+	key_list = []
+	value_list = []
+	q=0
+	for key, value in matches.items():
+		add = post_lam_helper(mod_id[q], id_list)
+		if add != 10000000:
+			#matches_final[id_list[add]] = add 
+			key_list.append(id_list[add])
+			value_list.append(add)
+		q+=1
+	g=0
+	for x in key_list:
+		matches_final[x] = value_list[g]
+		g+=1
+
+	#print(matches_final)
+	return matches_final
+
+
+
+def test_check(id_list,date_list, dateEntry, key):
+
+	newMatches = {}
+	matches = date_check(date_list,id_list,dateEntry)
+	print(matches)
+	for match in matches.keys():
+		if key in match:
+			if match in newMatches:
+				newMatches[match+"SECOND-TEST"] = matches.get(match)
+				print("TWO")
+			else:
+				newMatches[match] = matches.get(match)
+	matches_final = newMatches
+	mod_id = id_split("EP", newMatches)
+	key_list = []
+	value_list = []
+	q=0
+	for key, value in newMatches.items():
+		add = post_lam_helper(mod_id[q], id_list)
+		if add != 10000000:
+			#matches_final[id_list[add]] = add 
+			key_list.append(id_list[add])
+			value_list.append(add)
+		q+=1
+	g=0
+	for x in key_list:
+		matches_final[x] = value_list[g]
+		g+=1
+
+	return matches_final
+
+
 
 #def post_lam_find(wanted_id,id_list,matches,isc_list,voc_list,imp_list, vmp_list, pmp_list, ff_list, eff_list, rsh_list, rs_list):
 #	post_lam_mod = "none"
@@ -58,11 +123,10 @@ def post_lam(matches):
 	for post_lam in matches:
 		if condition in post_lam:
 			post_lam_list.append(post_lam)
-
-	if len(post_lam_list) == 0:
-		for post_lam4 in matches:
-			if "POST-LAM" in post_lam4:
-				post_lam_list.append(post_lam4)
+		if "POST-LAM" in post_lam:
+			post_lam_list.append(post_lam)
+		if "POSTLAM" in post_lam:
+			post_lam_list.append(post_lam)
 
 	if len(post_lam_list) == 0:
 		for post_lam2 in matches:
@@ -77,12 +141,36 @@ def post_lam(matches):
 	return post_lam_list
 
 
+#this helps find a post lam using modules id's chosen by date 
+def post_lam_helper(module, id_list):
+	condition =  entry3.get()
+	backup = "POST-LAM"
+	backup2 = "POSTLAM"
+	if condition == "":
+		condition = "POSTLAM"
+	i=0
+	#print(module)
+	for x in id_list:
+		if module in x:
+			#print(x)
+			if condition in x:
+			#	print("found all")
+				return i 
+			if backup in x:
+			#	print("found all")
+				return i
+			if backup2 in x:
+			#	print("found all")
+				return i
+		i+=1
+	return 10000000
+
+
 
 
 #function that will read through matches and find the correct modules from the batch 
 def percent_change_helper(post_lams, wanted_id,matches,isc_list,voc_list,imp_list, vmp_list, pmp_list, ff_list, eff_list, rsh_list, rs_list):
 	
-
 	best_mod = post_lams[0]
 	best_value = Levenshtein.distance(post_lams[0], wanted_id)
 	for match in post_lams:
@@ -94,6 +182,7 @@ def percent_change_helper(post_lams, wanted_id,matches,isc_list,voc_list,imp_lis
 		if best_mod == k:
 			post_lam_dict = {"isc": isc_list[v], "voc":voc_list[v], "imp": imp_list[v], "vmp": vmp_list[v], "pmp": pmp_list[v], "ff": ff_list[v], "eff": eff_list[v], "rsh": rsh_list[v], "rs": rs_list[v]}
 	return post_lam_dict
+
 
 
 
@@ -118,6 +207,7 @@ def condition_split(mod_iden,matches):
 			split_cond.append(temp[5])
 		return split_cond
 
+
 def id_split(mod_iden,matches):
 
 	split_id = []
@@ -131,6 +221,7 @@ def id_split(mod_iden,matches):
 				app = '-'.join(temp)
 				split_id.append(app)
 			return split_id
+			#print(split_id)
 		except:
 			for k,v in matches.items():
 				temp = k.split('-',1)
@@ -139,6 +230,7 @@ def id_split(mod_iden,matches):
 				app = '-'.join(temp)
 				split_id.append(app)
 			return split_id		
+			#print(split_id)
 	else:
 		for k,v in matches.items():
 			temp = k.split('-',5)
@@ -148,6 +240,7 @@ def id_split(mod_iden,matches):
 			split_id.append(app)
 
 		return split_id
+		#print(split_id)
 
 def barcode_helper(row, column, match_string):
 
@@ -182,7 +275,6 @@ def barcode_helper(row, column, match_string):
 			index+=1
 
 	barcode = match_string[start:]
-	print(barcode)
 	output = []
 
 	if len(barcode) >10:
@@ -233,7 +325,7 @@ def barcode_helper(row, column, match_string):
 				# print(barcode[10:12])
 				# if x[1] == barcode[7]:
 				output.append(x[0])
-				print(x[0])				
+				#print(x[0])				
 
 		return output
 	else:
@@ -241,8 +333,9 @@ def barcode_helper(row, column, match_string):
 
 
 
-
-
+# This function essentially performs the same way as percent_change, but is optimized for the "test" analyzation method 
+#def percent_change_test
+#	filename = entr
 
 
 #this function calculates percent change by first taking in lists with all values imported from access database in copyfromaccess()
@@ -252,8 +345,10 @@ def percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_li
 
 	filename = entry1.get()
 	post_lams = post_lam(matches)
+	#print(len(post_lams))
 	split_cond = condition_split(mod_iden,matches)
 	split_ids = id_split(mod_iden, matches)
+
 
 	percent_changeisc = {}
 	percent_changevoc = {}
@@ -290,43 +385,62 @@ def percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_li
 
 
 	for k,v in matches.items():
-		post_lam_dict = percent_change_helper(post_lams,k,matches,isc_list,voc_list,imp_list, vmp_list, pmp_list, ff_list, eff_list, rsh_list, rs_list)
-		if isc_list[v] == None:
-			percent_changeisc[k] = 0
-		else:
-			percent_changeisc[k] = ((isc_list[v] - post_lam_dict["isc"])/post_lam_dict["isc"]) *100
-		if voc_list[v] == None:
-			percent_changevoc[k] = 0
-		else:
-			percent_changevoc[k] = ((voc_list[v] - post_lam_dict["voc"])/post_lam_dict["voc"]) *100
-		if imp_list[v] == None:
-			percent_changeimp[k] = 0
-		else:
-			percent_changeimp[k] = ((imp_list[v] - post_lam_dict["imp"])/post_lam_dict["imp"]) *100
-		if vmp_list[v] == None:
-			percent_changevmp[k] = 0
-		else:
-			percent_changevmp[k] = ((vmp_list[v] - post_lam_dict["vmp"])/post_lam_dict["vmp"]) *100
-		if pmp_list[v] == None:
-			percent_changepmp[k] = 0
-		else:
-			percent_changepmp[k] = ((pmp_list[v] - post_lam_dict["pmp"])/post_lam_dict["pmp"]) *100
-		if ff_list[v] == None:
-			percent_changeff[k] = 0
-		else:
-			percent_changeff[k] = ((ff_list[v] - post_lam_dict["ff"])/post_lam_dict["ff"])*100
-		if eff_list[v] == None:
-			percent_changeeff[k] = 0
-		else:
-			percent_changeeff[k] = (eff_list[v] - post_lam_dict["eff"])
-		if rsh_list[v] == None:
-			percent_changersh[k] = 0
-		else:
-			percent_changersh[k] = ((rsh_list[v] - post_lam_dict["rsh"])/post_lam_dict["rsh"]) *100
-		if rs_list[v] == None:
-			percent_changers[k] = 0
-		else:
-			percent_changers[k] = ((rs_list[v] - post_lam_dict["rs"])/post_lam_dict["rs"]) *100
+		if k[0] == "E":
+			post_lam_dict = percent_change_helper(post_lams,k,matches,isc_list,voc_list,imp_list, vmp_list, pmp_list, ff_list, eff_list, rsh_list, rs_list)
+			if isc_list[v] == None:
+				percent_changeisc[k] = 0
+			elif post_lam_dict["isc"] == None:
+				post_lam_dict["isc"] == 0
+			else:
+				percent_changeisc[k] = ((isc_list[v] - post_lam_dict["isc"])/post_lam_dict["isc"]) *100
+			if voc_list[v] == None:
+				percent_changevoc[k] = 0
+			elif post_lam_dict["voc"] == None:
+				post_lam_dict["voc"] == 0
+			else:
+				percent_changevoc[k] = ((voc_list[v] - post_lam_dict["voc"])/post_lam_dict["voc"]) *100
+			if imp_list[v] == None:
+				percent_changeimp[k] = 0
+			elif post_lam_dict["imp"] == None:
+				post_lam_dict["imp"] == 0
+			else:
+				percent_changeimp[k] = ((imp_list[v] - post_lam_dict["imp"])/post_lam_dict["imp"]) *100
+			if vmp_list[v] == None:
+				percent_changevmp[k] = 0
+			elif post_lam_dict["vmp"] == None:
+				post_lam_dict["vmp"] == 0
+			else:
+				percent_changevmp[k] = ((vmp_list[v] - post_lam_dict["vmp"])/post_lam_dict["vmp"]) *100
+			if pmp_list[v] == None:
+				percent_changepmp[k] = 0
+			elif post_lam_dict["pmp"] == None:
+				post_lam_dict["pmp"] == 0
+			else:
+				percent_changepmp[k] = ((pmp_list[v] - post_lam_dict["pmp"])/post_lam_dict["pmp"]) *100
+			if ff_list[v] == None:
+				percent_changeff[k] = 0
+			elif post_lam_dict["ff"] == None:
+				post_lam_dict["ff"] == 0
+			else:
+				percent_changeff[k] = ((ff_list[v] - post_lam_dict["ff"])/post_lam_dict["ff"])*100
+			if eff_list[v] == None:
+				percent_changeeff[k] = 0
+			elif post_lam_dict["eff"] == None:
+				post_lam_dict["eff"] == 0
+			else:
+				percent_changeeff[k] = (eff_list[v] - post_lam_dict["eff"])
+			if rsh_list[v] == None:
+				percent_changersh[k] = 0
+			elif post_lam_dict["rsh"] == None:
+				post_lam_dict["rsh"] == 0
+			else:
+				percent_changersh[k] = ((rsh_list[v] - post_lam_dict["rsh"])/post_lam_dict["rsh"]) *100
+			if rs_list[v] == None:
+				percent_changers[k] = 0
+			elif post_lam_dict["rs"] == None:
+				post_lam_dict["rs"] == 0
+			else:
+				percent_changers[k] = ((rs_list[v] - post_lam_dict["rs"])/post_lam_dict["rs"]) *100
 
 	#print(percent_changers)
 
@@ -376,6 +490,7 @@ def percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_li
 
 	row=1 
 	column = 0
+	#print(len(split_ids))
 	for x in split_ids: 
 		column =0
 		barcode_list = barcode_helper(row, column, x)
@@ -445,9 +560,6 @@ def percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_li
 		row+=1
 	column+=1
 	row=1
-
-
-
 	for k, v in percent_changeisc.items():
 		worksheet.write(row,column, v)
 		row+=1
@@ -486,9 +598,8 @@ def percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_li
 	for k, v in percent_changersh.items():
 		worksheet.write(row,column, v)
 		row+=1
-
-
-
+	row=1
+	column+=1
 	for k, v in percent_changers.items():
 		worksheet.write(row,column, v)
 		row+=1
@@ -510,6 +621,10 @@ def copyfromaccess():
 
 	excel_path = entry1.get()
 	module_id = entry2.get()
+	dateEntry = entry4.get()
+	testEntry = entry5.get()
+
+	analyzeMethod = dropdown()
 
 	accessfile = askopenfilename(filetypes = [("Access Files", "*.accdb")], title = 'Select location of Microsoft Access database.')
 	#conn_str = (
@@ -517,7 +632,7 @@ def copyfromaccess():
 		#r'DBQ='+accessfile+';'
 	#)
 
-	print(accessfile)
+	#print(accessfile)
 
 	conn = pyodbc.connect(r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)}; DBQ='+accessfile+';')
 	#conn = pyodbc.connect(r'DRIVER={Microsoft Access Driver (*.mdb, *.accdb)}; DBQ=C:/Users/svargas/OneDrive - Merlin Solar Technologies, Inc/ModuleSummary.mdb;')
@@ -534,6 +649,13 @@ def copyfromaccess():
 		name = row[3]
 		id_list.append(name)
 	#print(id_list)
+
+	table_row = cursor.execute('Select * from Results')
+	date_list = []
+	for row in table_row:
+		date = row[4]
+		date_list.append(date)
+	#print(date_list)
 
 
 	table_row = cursor.execute('Select * from Results')
@@ -610,31 +732,59 @@ def copyfromaccess():
 	#print(rs_list)
 
 
-	matches = {}
-	matches = id_check(id_list, module_id)
-	#print(matches)
+	# if statements to check which is the desired analyzation method 
+	if analyzeMethod == "Project":
+		matches = {}
+		matches = id_check(id_list, module_id)
+		#print(matches)
 
-	#calling post lam function to find the module with post lam in the name and saving the result 
-	#post_lam = post_lam_find(id_list,matches,isc_list,voc_list,imp_list, vmp_list, pmp_list, ff_list, eff_list, rsh_list, rs_list)
-	#print(post_lam)
-	mod_iden = next(iter(matches))
+		#calling post lam function to find the module with post lam in the name and saving the result 
+		#post_lam = post_lam_find(id_list,matches,isc_list,voc_list,imp_list, vmp_list, pmp_list, ff_list, eff_list, rsh_list, rs_list)
+		#print(post_lam)
+		mod_iden = next(iter(matches))
 
-	if mod_iden[0:2] == "EP":
-		mod_iden = "EP"
-
-
-	percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_list, ff_list, eff_list, rsh_list, rs_list)
-
-	label4 = tk.Label(lengthwidth, text = "The percent change data has been exported to the Excel spreadsheet selected earlier.")
-	canvas1.create_window(350, 340, window = label4)
+		if mod_iden[0:2] == "EP":
+			mod_iden = "EP"
 
 
+		percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_list, ff_list, eff_list, rsh_list, rs_list)
+
+		label4 = tk.Label(lengthwidth, text = "The percent change data has been exported to the Excel spreadsheet selected earlier.")
+		canvas1.create_window(350, 420, window = label4)
+
+	if analyzeMethod == "Date":
+		matches = {}
+		matches = date_check(date_list, id_list, dateEntry)
+		#print(matches)
+		mod_iden = next(iter(matches))
+
+		if mod_iden[0:2] == "EP":
+			mod_iden = "EP"
+
+		#print(mod_iden)
+		percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_list, ff_list, eff_list, rsh_list, rs_list)
+		label4 = tk.Label(lengthwidth, text = "The percent change data has been exported to the Excel spreadsheet selected earlier.")
+		canvas1.create_window(350, 420, window = label4)
+
+
+	if analyzeMethod == "Test":
+		matches = {}
+		matches = test_check(id_list, date_list, dateEntry, testEntry)
+		#print(matches)
+
+		mod_iden = next(iter(matches))
+
+		if mod_iden[0:2] == "EP":
+			mod_iden = "EP"
+
+		percent_change(mod_iden,matches,isc_list,voc_list,imp_list, vmp_list, pmp_list, ff_list, eff_list, rsh_list, rs_list)
+		label4 = tk.Label(lengthwidth, text = "The percent change data has been exported to the Excel spreadsheet selected earlier.")
+		canvas1.create_window(350, 420, window = label4)
 
 
 
 
-# Part 2: Calculate percent change for all IVT data for all conditions from POSTLAM condition.
-
+#User Text Box Entries
 
 lengthwidth = tk.Tk()
 
@@ -659,13 +809,39 @@ canvas1.create_window(450, 220, window = entry3)
 label3 = tk.Label(text = "Module Condition to be used as Baseline")
 canvas1.create_window(240, 220, window = label3)
 
+entry4 = tk.Entry(lengthwidth)
+canvas1.create_window(450,260,window = entry4)
+
+label4 = tk.Label(text = "Date (Ex; '09/20/2021')")
+canvas1.create_window(240,260, window = label4)
+
+entry5 = tk.Entry(lengthwidth)
+canvas1.create_window(450,300, window = entry5)
+
+label5 = tk.Label(text = "Test (Ex; 'TC', 'HAST')")
+canvas1.create_window(240,300, window = label5)
+
+tkvar = tk.StringVar(lengthwidth)
+choices = {'Project', 'Date', 'Test'}
+tkvar.set('Project')
+
+popUpMenu = tk.OptionMenu(lengthwidth, tkvar, *choices)
+choiceLabel = tk.Label(text = 'Analyze By:')
+canvas1.create_window(240, 340, window=choiceLabel)
+canvas1.create_window(450,340, window= popUpMenu)
+
+def dropdown(*args):
+	return tkvar.get()
+
+tkvar.trace('w', dropdown)
+
 
 
 # Part 2: Return a list of packing factors for all modules for both orientations (no mixing of anything).
 
 
 button1 = tk.Button(text = "Enter", command = copyfromaccess)
-canvas1.create_window(350, 260, window = button1)
+canvas1.create_window(350, 380, window = button1)
 
 lengthwidth.mainloop()
 

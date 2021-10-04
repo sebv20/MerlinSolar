@@ -710,7 +710,7 @@ def copyfromaccess():
 	table_row = cursor.execute('Select * from Results')
 	eff_list = []
 	for row in table_row:
-		eff_value = row[12]
+		eff_value = row[11]
 		eff_list.append(eff_value)
 	#print(len(eff_list))
 	#print(eff_list)
@@ -718,7 +718,7 @@ def copyfromaccess():
 	table_row = cursor.execute('Select * from Results')
 	rsh_list = []
 	for row in table_row:
-		rsh_value = row[13]
+		rsh_value = row[12]
 		rsh_list.append(rsh_value)
 	#print(len(rsh_list))
 	#print(rsh_list)
@@ -726,7 +726,7 @@ def copyfromaccess():
 	table_row = cursor.execute('Select * from Results')
 	rs_list = []
 	for row in table_row:
-		rs_value = row[14]
+		rs_value = row[13]
 		rs_list.append(rs_value)
 	#print(len(rs_list))
 	#print(rs_list)
